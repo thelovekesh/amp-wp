@@ -229,24 +229,6 @@ class Test_AMP_Template_Customizer extends DependencyInjectedTestCase {
 
 	/**
 	 * @covers AMP_Template_Customizer::init()
-	 * @covers AMP_Template_Customizer::add_dark_mode_toggler_button_notice()
-	 */
-	public function test_init_for_twentytwentyone() {
-		if ( ! wp_get_theme( 'twentytwentyone' )->exists() ) {
-			$this->markTestSkipped();
-		}
-		switch_theme( 'twentytwentyone' );
-
-		$wp_customize = $this->get_customize_manager();
-		$instance     = AMP_Template_Customizer::init( $wp_customize );
-		$this->assertEquals( 10, has_action( 'customize_controls_print_footer_scripts', [ $instance, 'add_dark_mode_toggler_button_notice' ] ) );
-
-		$output = get_echo( [ $instance, 'add_dark_mode_toggler_button_notice' ] );
-		$this->assertStringContainsString( 'wp.customize.control', $output );
-	}
-
-	/**
-	 * @covers AMP_Template_Customizer::init()
 	 * @covers AMP_Template_Customizer::set_refresh_setting_transport()
 	 * @covers AMP_Template_Customizer::remove_cover_template_section()
 	 * @covers AMP_Template_Customizer::remove_homepage_settings_section()
