@@ -236,23 +236,6 @@ class AMP_Template_Customizer {
 	}
 
 	/**
-	 * Add notice that the dark mode toggler button is not currently available on AMP pages.
-	 */
-	public function add_dark_mode_toggler_button_notice() {
-		$message = __( 'While dark mode works on AMP pages, the toggle button is not currently available. It appears here only for preview purposes.', 'amp' );
-		?>
-		<script>
-			wp.customize.control( 'respect_user_color_preference', function ( control ) {
-				control.notifications.add( new wp.customize.Notification( 'amp_dark_mode_toggler_availability_notice', {
-					message: <?php echo wp_json_encode( $message ); ?>,
-					type: 'info'
-				} ) );
-			} );
-		</script>
-		<?php
-	}
-
-	/**
 	 * Init Customizer preview for legacy.
 	 *
 	 * @since 0.4
