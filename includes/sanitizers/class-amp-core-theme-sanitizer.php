@@ -84,11 +84,11 @@ class AMP_Core_Theme_Sanitizer extends AMP_Base_Sanitizer {
 		switch ( $theme_slug ) {
 			case 'twentytwentyone':
 				$config = [
-					'dequeue_scripts'                  => [
+					'dequeue_scripts'                      => [
 						'twenty-twenty-one-responsive-embeds-script',
 						'twenty-twenty-one-primary-navigation-script',
 					],
-					'remove_actions'                   => [
+					'remove_actions'                       => [
 						'wp_print_footer_scripts' => [
 							'twenty_twenty_one_skip_link_focus_fix', // Unnecessary since part of the AMP runtime.
 						],
@@ -97,23 +97,12 @@ class AMP_Core_Theme_Sanitizer extends AMP_Base_Sanitizer {
 							'twenty_twenty_one_supports_js', // AMP is essentially no-js, with any interactivity added explicitly via amp-bind.
 						],
 					],
-					'amend_twentytwentyone_styles'     => [],
+					'amend_twentytwentyone_styles'         => [],
 					'amend_twentytwentyone_sub_menu_toggles' => [],
-					'add_twentytwentyone_mobile_modal' => [],
-					'add_twentytwentyone_sub_menu_fix' => [],
+					'add_twentytwentyone_mobile_modal'     => [],
+					'add_twentytwentyone_sub_menu_fix'     => [],
+					'add_twentytwentyone_dark_mode_toggle' => [],
 				];
-
-				// Dark mode button toggle is only supported in the Customizer for now.
-				// A notice is added to the Customizer control in AMP_Template_Customizer::add_dark_mode_toggler_button_notice() via AMP_Template_Customizer::init().
-				if ( is_customize_preview() ) {
-					// Make dark mode toggle AMP compatible.
-					$config['add_twentytwentyone_dark_mode_toggle'] = [];
-				} else {
-					// Amend the dark mode stylesheet to only apply its rules when the user's system supports dark mode.
-					$config['amend_twentytwentyone_dark_mode_styles'] = [];
-					// Prevent the dark mode toggle and its accompanying script from being inlined.
-					$config['remove_actions']['wp_footer'][] = [ 'Twenty_Twenty_One_Dark_Mode', 'the_switch', 10 ];
-				}
 
 				return $config;
 
@@ -2038,16 +2027,15 @@ class AMP_Core_Theme_Sanitizer extends AMP_Base_Sanitizer {
 		$this->dom->head->appendChild( $style );
 
 		$toggle_class = 'is-dark-theme';
-		$state_id     = str_replace( '-', '_', $toggle_class );
 
 		$body_id     = $this->dom->getElementId( $this->dom->body );
 		$document_id = $this->dom->getElementId( $this->dom->documentElement );
 
-		AMP_DOM_Utils::add_amp_action( $button, 'tap', "AMP.setState({{$state_id}: !{$state_id}})" );
-		AMP_DOM_Utils::add_amp_action( $button, 'tap', "{$body_id}.toggleClass(class='{$toggle_class}')" );
+		$this->dom->body->setAttribute( 'data-prefers-dark-mode-class', $toggle_class );
+
+		AMP_DOM_Utils::add_amp_action( $button, 'tap', 'AMP.toggleTheme()' );
 		AMP_DOM_Utils::add_amp_action( $button, 'tap', "{$document_id}.toggleClass(class='{$toggle_class}')" );
 
-		$button->setAttribute( 'data-amp-bind-aria-pressed', "{$state_id} ? 'true' : 'false'" );
 	}
 
 	/**
