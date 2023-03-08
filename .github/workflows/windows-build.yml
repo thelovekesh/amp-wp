@@ -9,25 +9,25 @@ concurrency:
 
 jobs:
     lint-css:
-    name: 'Lint: CSS'
-    runs-on: windows-latest
-    steps:
-        - name: Checkout
-          uses: actions/checkout@v3
+        name: 'Lint: CSS'
+        runs-on: windows-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
 
-        - name: Setup Node
-          uses: actions/setup-node@v3.6.0
-          with:
-              node-version-file: '.nvmrc'
-              cache: npm
+            - name: Setup Node
+              uses: actions/setup-node@v3.6.0
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
 
-        - name: Install Node dependencies
-          run: npm ci
-          env:
-              CI: true
+            - name: Install Node dependencies
+              run: npm ci
+              env:
+                  CI: true
 
-        - name: Build assets
-          run: npm run build:prod
+            - name: Build assets
+              run: npm run build:prod
 
-        - name: Detect coding standard violations (stylelint)
-          run: npm run lint:css
+            - name: Detect coding standard violations (stylelint)
+              run: npm run lint:css
