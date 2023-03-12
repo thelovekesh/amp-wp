@@ -1,0 +1,121 @@
+{
+  "editor-color-palette": [
+    {
+      "name": "Accent Color",
+      "slug": "accent",
+      "color": "#cd2653"
+    },
+    {
+      "name": "Primary",
+      "slug": "primary",
+      "color": "#000000"
+    },
+    {
+      "name": "Secondary",
+      "slug": "secondary",
+      "color": "#6d6d6d"
+    },
+    {
+      "name": "Subtle Background",
+      "slug": "subtle-background",
+      "color": "#dcd7ca"
+    },
+    {
+      "name": "Background Color",
+      "slug": "background",
+      "color": "#f5efe0"
+    }
+  ],
+  "editor-font-sizes": [
+    {
+      "name": "Small",
+      "shortName": "S",
+      "size": 18,
+      "slug": "small"
+    },
+    {
+      "name": "Regular",
+      "shortName": "M",
+      "size": 21,
+      "slug": "normal"
+    },
+    {
+      "name": "Large",
+      "shortName": "L",
+      "size": 26.25,
+      "slug": "large"
+    },
+    {
+      "name": "Larger",
+      "shortName": "XL",
+      "size": 32,
+      "slug": "larger"
+    }
+  ]
+}
+
+{
+  "editor-font-sizes": [
+    {
+      "name": "Small",
+      "slug": "small",
+      "size": "13px"
+    },
+    {
+      "name": "Medium",
+      "slug": "medium",
+      "size": "20px"
+    },
+    {
+      "name": "Large",
+      "slug": "large",
+      "size": "36px"
+    },
+    {
+      "name": "Extra Large",
+      "slug": "x-large",
+      "size": "42px"
+    },
+    {
+      "fluid": {
+        "min": "0.875rem",
+        "max": "1rem"
+      },
+      "size": "1rem",
+      "slug": "small",
+      "name": "Small"
+    },
+    {
+      "fluid": {
+        "min": "1rem",
+        "max": "1.125rem"
+      },
+      "size": "1.125rem",
+      "slug": "medium",
+      "name": "Medium"
+    },
+    {
+      "fluid": {
+        "min": "1.75rem",
+        "max": "1.875rem"
+      },
+      "size": "1.75rem",
+      "slug": "large",
+      "name": "Large"
+    },
+    {
+      "fluid": false,
+      "size": "2.25rem",
+      "slug": "x-large",
+      "name": "Extra Large"
+    },
+    {
+      "fluid": {
+        "min": "4rem",
+        "max": "10rem"
+      },
+      "size": "10rem",
+      "slug": "xx-large"
+    }
+  ]
+}

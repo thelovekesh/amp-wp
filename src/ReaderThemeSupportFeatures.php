@@ -74,6 +74,20 @@ final class ReaderThemeSupportFeatures implements Service, Registerable {
 	const KEY_GRADIENT = 'gradient';
 
 	/**
+	 * Theme key in block editor.
+	 *
+	 * @var string
+	 */
+	const KEY_THEME = 'theme';
+
+	/**
+	 * Default key in block editor.
+	 *
+	 * @var string
+	 */
+	const KEY_DEFAULT = 'default';
+
+	/**
 	 * Action fired when the cached primary_theme_support should be updated.
 	 *
 	 * @var string
@@ -89,6 +103,17 @@ final class ReaderThemeSupportFeatures implements Service, Registerable {
 		self::FEATURE_EDITOR_COLOR_PALETTE    => [ self::KEY_SLUG, self::KEY_COLOR ],
 		self::FEATURE_EDITOR_GRADIENT_PRESETS => [ self::KEY_SLUG, self::KEY_GRADIENT ],
 		self::FEATURE_EDITOR_FONT_SIZES       => [ self::KEY_SLUG, self::KEY_SIZE ],
+	];
+
+	/**
+	 * theme.json paths mapping to be fetched using `wp_get_global_settings()`.
+	 *
+	 * @var array[]
+	 */
+	const SUPPORTED_THEME_JSON_FEATURES = [
+		self::FEATURE_EDITOR_COLOR_PALETTE    => [ 'color', 'palette' ],
+		self::FEATURE_EDITOR_GRADIENT_PRESETS => [ 'color', 'gradients' ],
+		self::FEATURE_EDITOR_FONT_SIZES       => [ 'typography', 'fontSizes' ],
 	];
 
 	/**
@@ -203,13 +228,31 @@ final class ReaderThemeSupportFeatures implements Service, Registerable {
 	 */
 	public function get_theme_support_features( $reduced = false ) {
 		$features = [];
+
 		foreach ( array_keys( self::SUPPORTED_FEATURES ) as $feature_key ) {
-			$feature_value = current( (array) get_theme_support( $feature_key ) );
+			if ( $this->theme_json_exists() ) {
+				$feature_value = wp_get_global_settings( self::SUPPORTED_THEME_JSON_FEATURES[ $feature_key ], 'theme' );
+
+				if ( isset( $feature_value['default'] ) ) {
+					$feature_value = array_merge( $feature_value, $feature_value['default'] );
+				}
+
+				if ( isset( $feature_value['theme'] ) ) {
+					$feature_value = array_merge( $feature_value, $feature_value['theme'] );
+				}
+
+				unset( $feature_value['default'], $feature_value['theme'] );
+			} else {
+				$feature_value = current( (array) get_theme_support( $feature_key ) );
+			}
+
 			if ( ! is_array( $feature_value ) || empty( $feature_value ) ) {
 				continue;
 			}
+
 			if ( $reduced ) {
 				$features[ $feature_key ] = [];
+
 				foreach ( $feature_value as $item ) {
 					if ( $this->has_required_feature_props( $feature_key, $item ) ) {
 						$features[ $feature_key ][] = wp_array_slice_assoc( $item, self::SUPPORTED_FEATURES[ $feature_key ] );
@@ -219,7 +262,18 @@ final class ReaderThemeSupportFeatures implements Service, Registerable {
 				$features[ $feature_key ] = $feature_value;
 			}
 		}
+
 		return $features;
+	}
+
+	/**
+	 * Get the theme support features from theme.json.
+	 *
+	 * @param bool $reduced Whether to reduce the feature props down to just what is required.
+	 * @return array Theme support features.
+	 */
+	public function get_theme_json_features( $reduced ) {
+
 	}
 
 	/**
@@ -271,6 +325,17 @@ final class ReaderThemeSupportFeatures implements Service, Registerable {
 					break;
 			}
 		}
+	}
+
+	/**
+	 * Check if theme.json exists in the child or parent theme.
+	 *
+	 * @since 2.4.1
+	 *
+	 * @return bool Whether a theme or its parent has a theme.json file.
+	 */
+	private function theme_json_exists() {
+		return ( is_readable( get_stylesheet_directory() . '/theme.json' ) ? true : is_readable( get_template_directory() . '/theme.json' ) );
 	}
 
 	/**

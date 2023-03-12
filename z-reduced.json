@@ -1,0 +1,42 @@
+{
+  "editor-color-palette": [
+    {
+      "slug": "accent",
+      "color": "#cd2653"
+    },
+    {
+      "slug": "primary",
+      "color": "#000000"
+    },
+    {
+      "slug": "secondary",
+      "color": "#6d6d6d"
+    },
+    {
+      "slug": "subtle-background",
+      "color": "#dcd7ca"
+    },
+    {
+      "slug": "background",
+      "color": "#f5efe0"
+    }
+  ],
+  "editor-font-sizes": [
+    {
+      "slug": "small",
+      "size": 18
+    },
+    {
+      "slug": "normal",
+      "size": 21
+    },
+    {
+      "slug": "large",
+      "size": 26.25
+    },
+    {
+      "slug": "larger",
+      "size": 32
+    }
+  ]
+}
