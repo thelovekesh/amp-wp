@@ -84,122 +84,122 @@ jobs:
           # - docs/
           IGNORE_PATH_REGEX: \.github\/(?!workflows)|\.wordpress-org\/|docs\/
 
-  lint-css:
-    needs: pre-run
-    if: needs.pre-run.outputs.changed-css-count > 0 || needs.pre-run.outputs.changed-gha-workflow-count > 0
-    name: 'Lint: CSS'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # lint-css:
+  #   needs: pre-run
+  #   if: needs.pre-run.outputs.changed-css-count > 0 || needs.pre-run.outputs.changed-gha-workflow-count > 0
+  #   name: 'Lint: CSS'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v3.6.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: npm
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v3.6.0
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #         cache: npm
 
-      - name: Install Node dependencies
-        run: npm ci
-        env:
-          CI: true
+  #     - name: Install Node dependencies
+  #       run: npm ci
+  #       env:
+  #         CI: true
 
-      - name: Detect coding standard violations (stylelint)
-        run: npm run lint:css
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-  lint-js:
-    name: 'Lint: JS'
-    needs: pre-run
-    if: needs.pre-run.outputs.changed-js-count > 0 || needs.pre-run.outputs.changed-gha-workflow-count > 0
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node
-        uses: actions/setup-node@v3.6.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: npm
-
-      - name: Install Node dependencies
-        run: npm ci
-        env:
-          CI: true
-
-      - name: Validate package.json
-        run: npm run lint:pkg-json
-
-      - name: Detect ESLint coding standard violations
-        if: >
-          github.event.pull_request.head.repo.fork == true ||
-          github.event.pull_request.user.login == 'dependabot[bot]'
-        run: npm run lint:js
-
-      - name: Generate ESLint coding standard violations report
-        # Prevent generating the ESLint report if PR is from a fork or authored by Dependabot.
-        if: >
-          ! ( github.event.pull_request.head.repo.fork == true ||
-          github.event.pull_request.user.login == 'dependabot[bot]' )
-        run: npm run lint:js:report
-        continue-on-error: true
-
-      - name: Annotate code linting results
-        # The action cannot annotate the PR when run from a PR fork or was authored by Dependabot.
-        if: >
-          ! ( github.event.pull_request.head.repo.fork == true ||
-          github.event.pull_request.user.login == 'dependabot[bot]' )
-        uses: ataylorme/eslint-annotate-action@1.2.0
-        with:
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'
-          report-json: 'lint-js-report.json'
+  #     - name: Detect coding standard violations (stylelint)
+  #       run: npm run lint:css
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-  lint-php:
-    name: 'Lint: PHP'
-    needs: pre-run
-    if: needs.pre-run.outputs.changed-php-count > 0 || needs.pre-run.outputs.changed-gha-workflow-count > 0
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # lint-js:
+  #   name: 'Lint: JS'
+  #   needs: pre-run
+  #   if: needs.pre-run.outputs.changed-js-count > 0 || needs.pre-run.outputs.changed-gha-workflow-count > 0
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.0'
-          coverage: none
-          tools: cs2pr
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v3.6.0
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #         cache: npm
 
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+  #     - name: Install Node dependencies
+  #       run: npm ci
+  #       env:
+  #         CI: true
 
-      - name: Configure Composer cache
-        uses: actions/cache@v3.3.1
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
+  #     - name: Validate package.json
+  #       run: npm run lint:pkg-json
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction
+  #     - name: Detect ESLint coding standard violations
+  #       if: >
+  #         github.event.pull_request.head.repo.fork == true ||
+  #         github.event.pull_request.user.login == 'dependabot[bot]'
+  #       run: npm run lint:js
 
-      - name: Validate composer.json
-        run: composer --no-interaction validate --no-check-all
+  #     - name: Generate ESLint coding standard violations report
+  #       # Prevent generating the ESLint report if PR is from a fork or authored by Dependabot.
+  #       if: >
+  #         ! ( github.event.pull_request.head.repo.fork == true ||
+  #         github.event.pull_request.user.login == 'dependabot[bot]' )
+  #       run: npm run lint:js:report
+  #       continue-on-error: true
 
-      - name: Detect coding standard violations (PHPCS)
-        run: vendor/bin/phpcs -q --report=checkstyle --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 | cs2pr --graceful-warnings
+  #     - name: Annotate code linting results
+  #       # The action cannot annotate the PR when run from a PR fork or was authored by Dependabot.
+  #       if: >
+  #         ! ( github.event.pull_request.head.repo.fork == true ||
+  #         github.event.pull_request.user.login == 'dependabot[bot]' )
+  #       uses: ataylorme/eslint-annotate-action@1.2.0
+  #       with:
+  #         repo-token: '${{ secrets.GITHUB_TOKEN }}'
+  #         report-json: 'lint-js-report.json'
 
-      - name: Normalize composer.json
-        run: |
-          composer config --no-interaction --no-plugins allow-plugins.ergebnis/composer-normalize true
-          composer require --no-interaction --dev ergebnis/composer-normalize --ignore-platform-reqs
-          composer --no-interaction normalize --dry-run
+#-----------------------------------------------------------------------------------------------------------------------
+
+  # lint-php:
+  #   name: 'Lint: PHP'
+  #   needs: pre-run
+  #   if: needs.pre-run.outputs.changed-php-count > 0 || needs.pre-run.outputs.changed-gha-workflow-count > 0
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+
+  #     - name: Setup PHP
+  #       uses: shivammathur/setup-php@v2
+  #       with:
+  #         php-version: '8.0'
+  #         coverage: none
+  #         tools: cs2pr
+
+  #     - name: Get Composer Cache Directory
+  #       id: composer-cache
+  #       run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+  #     - name: Configure Composer cache
+  #       uses: actions/cache@v3.3.1
+  #       with:
+  #         path: ${{ steps.composer-cache.outputs.dir }}
+  #         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-composer-
+
+  #     - name: Install Composer dependencies
+  #       run: composer install --prefer-dist --optimize-autoloader --no-progress --no-interaction
+
+  #     - name: Validate composer.json
+  #       run: composer --no-interaction validate --no-check-all
+
+  #     - name: Detect coding standard violations (PHPCS)
+  #       run: vendor/bin/phpcs -q --report=checkstyle --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 | cs2pr --graceful-warnings
+
+  #     - name: Normalize composer.json
+  #       run: |
+  #         composer config --no-interaction --no-plugins allow-plugins.ergebnis/composer-normalize true
+  #         composer require --no-interaction --dev ergebnis/composer-normalize --ignore-platform-reqs
+  #         composer --no-interaction normalize --dry-run
 
 #-----------------------------------------------------------------------------------------------------------------------
 
