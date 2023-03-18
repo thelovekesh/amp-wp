@@ -21,8 +21,7 @@ module.exports = function (grunt) {
 
 	// These will be removed from the build directory after installing but prior to creating a ZIP.
 	// ⚠️ Warning: These paths are passed straight to rm command in the shell, without any escaping.
-	const productionInstallExcludedFilePatterns = [
-		'composer.*',
+	const productionInstallExcludedFilePatterns = [		'composer.*',
 		'vendor/*/*/.editorconfig',
 		'vendor/*/*/.git',
 		'vendor/*/*/.github',

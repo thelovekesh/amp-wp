@@ -3,7 +3,8 @@
 }
 
 .source > .dashicons {
-	margin-right: 5px;
+	margin-right: 
+	5px;
 }
 
 .column-source .dashicons-admin-plugins,
@@ -13,6 +14,12 @@
 
 .column-source .dashicons-admin-appearance,
 .column-sources_with_invalid_output .dashicons-admin-appearance {
+		
+		
+		
+		
+			
+		
 	color: #ebb04f;
 }
 
