@@ -15,8 +15,9 @@ import { saveSettings } from '../../utils/amp-settings-utils';
 
 describe('AMP settings page anchor linking', () => {
 	beforeEach(async () => {
+		await page.setDefaultNavigationTimeout(2000);
 		await loginUser();
-	}, 400000);
+	});
 
 	it('jumps to supported templates section', async () => {
 		await visitAdminPageWithHash(
@@ -44,13 +45,14 @@ describe('AMP settings page anchor linking', () => {
 
 describe('AMP developer tools settings', () => {
 	beforeEach(async () => {
+		await page.setDefaultNavigationTimeout(2000);
 		await loginUser();
 		await visitAdminPageWithHash(
 			'admin.php',
 			'page=amp-options',
 			'other-settings'
 		);
-	}, 400000);
+	});
 
 	afterEach(async () => {
 		await cleanUpSettings();
