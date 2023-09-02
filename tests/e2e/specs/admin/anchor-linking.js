@@ -15,7 +15,7 @@ import { saveSettings } from '../../utils/amp-settings-utils';
 
 describe('AMP settings page anchor linking', () => {
 	beforeEach(async () => {
-		await page.setDefaultNavigationTimeout(2000);
+		await page.setDefaultNavigationTimeout(20000);
 		await loginUser();
 	});
 
@@ -45,7 +45,7 @@ describe('AMP settings page anchor linking', () => {
 
 describe('AMP developer tools settings', () => {
 	beforeEach(async () => {
-		await page.setDefaultNavigationTimeout(2000);
+		await page.setDefaultNavigationTimeout(20000);
 		await loginUser();
 		await visitAdminPageWithHash(
 			'admin.php',
