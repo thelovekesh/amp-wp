@@ -28,13 +28,6 @@ runs:
       shell: bash
       run: sudo service mysql stop
 
-    - name: Test if MariaDB service exists
-      if: contains( fromJson(env.services), 'mysql' )
-      shell: bash
-      run: |
-          echo "::error ::MariaDB service is not enabled. Please enable it in your workflow file."
-          exit 1
-
     - name: Verify MariaDB connection
       shell: bash
       run: |
