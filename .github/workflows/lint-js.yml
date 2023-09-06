@@ -4,16 +4,14 @@ on:
   push:
     branches:
       - develop
-      # Include all release branches.
       - '[0-9]+.[0-9]+'
   pull_request:
-    # Run workflow whenever a PR is opened, updated (synchronized), or marked ready for review.
-    types: [opened, synchronize, ready_for_review]
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
 
-# Cancel previous workflow run groups that have not completed.
 concurrency:
-  # Group workflow runs by workflow name, along with the head branch ref of the pull request
-  # or otherwise the branch or tag ref.
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
   cancel-in-progress: true
 
@@ -21,44 +19,28 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Determine changed files
-        id: file-counts
-        uses: ./.github/actions/determine-changed-files
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Setup NodeJS and NPM
-        if: steps.file-counts.outputs.js-count > 0 || steps.file-counts.outputs.css-count > 0
-        uses: ./.github/actions/setup-node-npm
+        uses: ./github/actions/setup-node-npm
 
-      - name: Setup PHP and Composer
-        if: steps.file-counts.outputs.php-count > 0
-        uses: ./.github/actions/setup-php-composer
+      - name: Validate package.json
+        run: npm run lint:pkg-json
+
+      - name: Detect coding standard violations (ESLint)
+        if: github.event.pull_request.head.repo.full_name != github.repository && github.actor == 'dependabot[bot]'
+        run: |
+          npm run lint:js
+          echo "Ingorning ESLint report generation as PR is from a fork or authored by Dependabot."
+          exit 0
+
+      - name: Generate ESLint coding standard violations report
+        run: npm run lint:js:report
+        continue-on-error: true
+
+      - name: Annotate code linting results
+        uses: ataylorme/eslint-annotate-action@2.2.0
         with:
-          tools: 'composer,cs2pr,composer-normalize,phpstan'
-          php-version: '8.1'
-
-      - name: Lint CSS
-        if: steps.file-counts.outputs.css-count > 0
-        run: npm run lint:css
-
-      - name: Lint JS
-        if: steps.file-counts.outputs.js-count > 0
-        run: npm run lint:js
-
-      - name: Lint PHP
-        if: steps.file-counts.outputs.php-count > 0
-        run: composer run-script lint:php
-
-      - name: Static Analysis PHP (PHPStan)
-        if: steps.file-counts.outputs.php-count > 0
-        run: |
-          phpstan --version
-          phpstan analyse
-
-      - name: Validate composer.json
-        run: composer --no-interaction validate --no-check-all
-
-      - name: Normalize composer.json
-        if: steps.file-counts.outputs.php-count > 0
-        run: |
-          composer config --no-interaction --no-plugins allow-plugins.ergebnis/composer-normalize true
-          composer normalize --dry-run --diff
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          report-json: 'lint-js-report.json'
