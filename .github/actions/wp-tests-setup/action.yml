@@ -3,9 +3,17 @@ name: Setup WordPress for Unit Testing
 description: Setup WordPress environment for unit testing with multiple PHP and WordPress versions.
 
 inputs:
+  unit-tests:
+    description: 'Run setup for unit tests'
+    required: false
+    default: false
+  feature-tests:
+    description: 'Run setup for feature tests'
+    required: false
+    default: false
   wp:
     description: 'The WordPress version to install'
-    required: true
+    required: false
     default: 'latest'
   install-pwa-plugin:
     description: 'Whether to install the PWA plugin'
@@ -35,10 +43,24 @@ runs:
         done
 
     - name: Install WP tests
+      if: ${{ inputs.unit-tests == 'true' }}
       run: bash bin/ci/install-wp-tests.sh wordpress_test root '' 127.0.0.1:${{ job.services.mysql.ports['3306'] }} ${{ inputs.wp }} true
 
     - name: Post install of WP tests
+      if: ${{ inputs.unit-tests == 'true' }}
       run: bash bin/ci/after-wp-install.sh ${{ inputs.wp }} ${{ inputs.install-pwa-plugin }}
 
     - name: Copy plugin to WP plugins directory
+      if: ${{ inputs.unit-tests == 'true' }}
       run: cp -r "$PWD" "$WP_CORE_DIR/src/wp-content/plugins/amp"
+
+    - name: Configure DB for feature tests
+      if: ${{ inputs.feature-tests == 'true' }}
+      run: |
+        echo "MYSQL_HOST=127.0.0.1" >> $GITHUB_ENV
+        echo "MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
+        echo "WP_CLI_TEST_DBROOTUSER=root" >> $GITHUB_ENV
+        echo "WP_CLI_TEST_DBROOTPASS=" >> $GITHUB_ENV
+        echo "WP_CLI_TEST_DBUSER=wp_cli_test" >> $GITHUB_ENV
+        echo "WP_CLI_TEST_DBPASS=password1" >> $GITHUB_ENV
+        echo "WP_CLI_TEST_DBHOST=127.0.0.1:${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
