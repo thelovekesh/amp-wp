@@ -1,0 +1,47 @@
+name: JS Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - '[0-9]+.[0-9]+'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: E2E
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS and NPM
+        uses: ./github/actions/setup-node-npm
+
+      - name: Setup PHP and Composer
+        uses: ./github/actions/setup-php-composer
+
+      - name: Build plugin
+        run: npm run build:js
+
+      - name: Start Docker environment
+        run: npm run env:start:ci
+        env:
+          COMPOSE_INTERACTIVE_NO_CLI: true
+
+      - name: Run E2E tests
+        run: npm run test:e2e:ci
+
+      - name: Stop Docker environment
+        run: npm run env:stop:ci
+        if: always()
+        env:
+          COMPOSE_INTERACTIVE_NO_CLI: true
