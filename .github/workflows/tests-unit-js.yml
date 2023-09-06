@@ -1,0 +1,44 @@
+name: JS Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - '[0-9]+.[0-9]+'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Unit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS and NPM
+        uses: ./github/actions/setup-node-npm
+
+      - name: Setup Jest cache
+        uses: actions/cache@v3.3.1
+        with:
+          path: ~/.jest-cache
+          key: ${{ runner.os }}-jest
+
+      - name: Run unit tests (with coverage)
+        run: npm run test:js -- --ci --cacheDirectory="$HOME/.jest-cache" --collectCoverage
+
+      - name: Upload code coverage report
+        if: github.actor != 'dependabot[bot]'
+        uses: codecov/codecov-action@v3
+        with:
+          file: build/logs/lcov.info
+          flags: javascript
+          fail_ci_if_error: true
