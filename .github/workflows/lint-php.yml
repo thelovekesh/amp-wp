@@ -1,0 +1,45 @@
+name: Lint PHP
+
+on:
+  push:
+    branches:
+      - develop
+      - '[0-9]+.[0-9]+'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP and Composer
+        uses: ./github/actions/setup-php-composer
+        with:
+          tools: 'composer,cs2pr,composer-normalize,phpstan'
+          php-version: '8.1'
+
+      - name: Detect coding standard violations (PHPCS)
+        run: vendor/bin/phpcs -q --report=checkstyle --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 | cs2pr --graceful-warnings
+
+      - name: Static Analysis with PHPStan
+        run: |
+          phpstan --version
+          phpstan analyse
+
+      - name: Validate composer.json
+        run: composer --no-interaction validate --no-check-all
+
+      - name: Normalize composer.json
+        run: |
+          composer config --no-interaction --no-plugins allow-plugins.ergebnis/composer-normalize true
+          composer-normalize --dry-run --diff
