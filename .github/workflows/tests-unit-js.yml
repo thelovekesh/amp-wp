@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup NodeJS and NPM
-        uses: ./github/actions/setup-node-npm
+        uses: ./.github/actions/setup-node-npm
 
       - name: Setup Jest cache
         uses: actions/cache@v3.3.1

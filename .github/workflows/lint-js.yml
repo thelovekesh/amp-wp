@@ -27,11 +27,11 @@ jobs:
 
       - name: Setup NodeJS and NPM
         if: steps.file-counts.outputs.js-count > 0 || steps.file-counts.outputs.css-count > 0
-        uses: ./github/actions/setup-node-npm
+        uses: ./.github/actions/setup-node-npm
 
       - name: Setup PHP and Composer
         if: steps.file-counts.outputs.php-count > 0
-        uses: ./github/actions/setup-php-composer
+        uses: ./.github/actions/setup-php-composer
         with:
           tools: 'composer,cs2pr,composer-normalize,phpstan'
           php-version: '8.1'
