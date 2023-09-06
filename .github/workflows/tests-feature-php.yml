@@ -1,0 +1,104 @@
+name: PHP Feature Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - '[0-9]+.[0-9]+'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: "PHP ${{ matrix.php }}, WP ${{ matrix.wp }}, Coverage ${{ matrix.coverage == true && 'enabled' || 'disabled' }}"
+    runs-on: ubuntu-latest
+    env:
+      WP_CORE_DIR: /tmp/wordpress
+    services:
+      mysql:
+        image: mariadb:latest
+        env:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
+          MARIADB_DATABASE: wordpress_test
+          MARIADB_MYSQL_LOCALHOST_USER: 1
+          MARIADB_MYSQL_LOCALHOST_GRANTS: USAGE
+        ports:
+          - 3306
+        options: --health-cmd="healthcheck.sh --su-mysql --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3
+    continue-on-error: ${{ matrix.experimental == true }}
+    strategy:
+      fail-fast: false
+      matrix:
+        coverage: [false]
+        php: ['7.4']
+        wp: ['latest']
+        include:
+          - php: '8.2'
+            wp: 'trunk'
+            experimental: true
+
+          - php: '8.1'
+            wp: 'trunk'
+            experimental: true
+
+          - php: '8.0'
+            wp: 'latest'
+
+          # @TODO: Enable code coverage for feature tests if codecov supports it.
+          - php: '7.4'
+            wp: 'latest'
+
+          - php: '7.4'
+            wp: '5.3'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP and Composer
+        uses: ./github/actions/setup-php-composer
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: ${{ matrix.coverage && 'xdebug' || 'none' }}
+
+      - name: Setup NodeJS and NPM
+        uses: ./github/actions/setup-node-npm
+
+      - name: Build plugin
+        run: npm run build:js
+
+      - name: Setup WordPress
+        uses: ./github/actions/wp-tests-setup
+        with:
+          feature-tests: true
+          wp: ${{ matrix.wp }}
+
+      - name: Prepare test database
+        run: composer prepare-tests
+
+      - name: Run tests
+        env:
+          BEHAT_CODE_COVERAGE: ${{ matrix.coverage }}
+        run: vendor/bin/behat
+
+      - name: Retrieve list of coverage files
+        if: ${{ matrix.coverage == true }}
+        run: |
+          FILES=$(ls -d -1 "$GITHUB_WORKSPACE/build/logs/clover-behat/"*.* | xargs echo | sed 's/ /,/g')
+          echo $FILES
+          echo "COVERAGE_FILES=$FILES" >> $GITHUB_ENV
+
+      - name: Upload code coverage report
+        if: ${{ matrix.coverage == true && github.actor != 'dependabot[bot]' }}
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.COVERAGE_FILES }}
+          flags: php,feature
+          fail_ci_if_error: true
