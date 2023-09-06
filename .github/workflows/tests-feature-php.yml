@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   test:
-    name: "PHP ${{ matrix.php }}, WP ${{ matrix.wp }}, Coverage ${{ matrix.coverage == true && 'enabled' || 'disabled' }}"
+    name: "PHP ${{ matrix.php }}, WP ${{ matrix.wp }}${{ matrix.coverage == true && '( with coverage)' || '' }}"
     runs-on: ubuntu-latest
     env:
       WP_CORE_DIR: /tmp/wordpress

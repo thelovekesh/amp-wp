@@ -1,4 +1,4 @@
-name: JS Tests
+name: JS Unit Tests
 
 on:
   push:
@@ -17,7 +17,6 @@ concurrency:
 
 jobs:
   tests:
-    name: Unit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

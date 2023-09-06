@@ -1,3 +1,4 @@
+---
 name: CodeQL
 
 # Cancel previous workflow run groups that have not completed.

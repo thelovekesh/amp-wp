@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   test:
-    name: "PHP ${{ matrix.php }}, WP ${{ matrix.multisite == true && 'Multisite' || 'Single Site' }} ${{ matrix.wp }}, PHPUnit ${{ matrix.phpunit }} (testsuite: ${{ matrix.external-http ==true && 'External HTTP' || 'Default' }}), Coverage ${{ matrix.coverage == true && 'enabled' || 'disabled' }}"
+    name: "PHP ${{ matrix.php }}, WP ${{ matrix.multisite == true && 'Multisite' || 'Single Site' }} ${{ matrix.wp }}, PHPUnit ${{ matrix.phpunit }} (Test Suite: ${{ matrix.external-http == true && 'External HTTP' || 'Default' }})${{ matrix.coverage == true && '( with coverage)' || '' }}"
     runs-on: ubuntu-latest
     env:
       WP_CORE_DIR: /tmp/wordpress
