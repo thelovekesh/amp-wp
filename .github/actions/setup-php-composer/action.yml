@@ -33,6 +33,7 @@ runs:
 
     - name: Get Composer Cache Directory
       id: composer-cache
+      shell: bash
       run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
     - name: Setup composer cache
@@ -47,4 +48,5 @@ runs:
           ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}-
 
     - name: Install composer dependencies
+      shell: bash
       run: composer install --ansi --no-interaction --prefer-dist --ignore-platform-reqs

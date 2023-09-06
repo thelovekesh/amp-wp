@@ -25,10 +25,12 @@ runs:
   using: 'composite'
   steps:
     - name: Shutdown default MySQL service
+      shell: bash
       run: sudo service mysql stop
 
     - name: Test if MariaDB service exists
       id: check-mariadb
+      shell: bash
       run: |
         # Exit with error if MariaDB service is not enabled.
         if [ -z "${{ contains( fromJson(env.services), 'mysql' ) }}" ]; then
@@ -37,6 +39,7 @@ runs:
         fi
 
     - name: Verify MariaDB connection
+      shell: bash
       run: |
         while ! mysqladmin ping -h"127.0.0.1" -P"${{ job.services.mysql.ports[3306] }}" --silent; do
           sleep 1
@@ -44,18 +47,22 @@ runs:
 
     - name: Install WP tests
       if: ${{ inputs.unit-tests == 'true' }}
+      shell: bash
       run: bash bin/ci/install-wp-tests.sh wordpress_test root '' 127.0.0.1:${{ job.services.mysql.ports['3306'] }} ${{ inputs.wp }} true
 
     - name: Post install of WP tests
       if: ${{ inputs.unit-tests == 'true' }}
+      shell: bash
       run: bash bin/ci/after-wp-install.sh ${{ inputs.wp }} ${{ inputs.install-pwa-plugin }}
 
     - name: Copy plugin to WP plugins directory
       if: ${{ inputs.unit-tests == 'true' }}
+      shell: bash
       run: cp -r "$PWD" "$WP_CORE_DIR/src/wp-content/plugins/amp"
 
     - name: Configure DB for feature tests
       if: ${{ inputs.feature-tests == 'true' }}
+      shell: bash
       run: |
         echo "MYSQL_HOST=127.0.0.1" >> $GITHUB_ENV
         echo "MYSQL_TCP_PORT=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
