@@ -1,0 +1,230 @@
+diff --git a/node_modules/@wordpress/scripts/config/jest-environment-puppeteer/global.js b/node_modules/@wordpress/scripts/config/jest-environment-puppeteer/global.js
+index cbac219..3c80c33 100644
+--- a/node_modules/@wordpress/scripts/config/jest-environment-puppeteer/global.js
++++ b/node_modules/@wordpress/scripts/config/jest-environment-puppeteer/global.js
+@@ -21,74 +21,87 @@ const {
+ 	teardown: teardownServer,
+ 	ERROR_TIMEOUT,
+ 	ERROR_NO_COMMAND,
+-} = require( 'jest-dev-server' );
+-const chalk = require( 'chalk' );
++} = require('jest-dev-server');
++const chalk = require('chalk');
+ 
+ /**
+  * Internal dependencies
+  */
+-const { readConfig, getPuppeteer } = require( './config' );
++const { readConfig, getPuppeteer } = require('./config');
++const { executablePath } = require('puppeteer')
+ 
+ let browser;
+ 
+ let didAlreadyRunInWatchMode = false;
+ 
+-async function setup( jestConfig = {} ) {
++async function setup(jestConfig = {}) {
+ 	const config = await readConfig();
+-	const puppeteer = getPuppeteer( config );
+-	if ( config.connect ) {
+-		browser = await puppeteer.connect( config.connect );
++	const puppeteer = getPuppeteer(config);
++	if (config.connect) {
++		browser = await puppeteer.connect(config.connect);
+ 	} else {
+-		browser = await puppeteer.launch( config.launch );
++		// console.log(config.launch)
++		browser = await puppeteer.launch(
++			{
++				devtools: false,
++				headless: true,
++				slowMo: 0,
++				args: [
++					'--enable-blink-features=ComputedAccessibilityInfo',
++					'--disable-web-security'
++				],
++				executablePath: executablePath(),
++			}
++		);
+ 	}
+ 	process.env.PUPPETEER_WS_ENDPOINT = browser.wsEndpoint();
+ 
+ 	// If we are in watch mode, - only setupServer() once.
+-	if ( jestConfig.watch || jestConfig.watchAll ) {
+-		if ( didAlreadyRunInWatchMode ) return;
++	if (jestConfig.watch || jestConfig.watchAll) {
++		if (didAlreadyRunInWatchMode) return;
+ 		didAlreadyRunInWatchMode = true;
+ 	}
+ 
+-	if ( config.server ) {
++	if (config.server) {
+ 		try {
+-			await setupServer( config.server );
+-		} catch ( error ) {
++			await setupServer(config.server);
++		} catch (error) {
+ 			const { error: printError } = console;
+-			if ( error.code === ERROR_TIMEOUT ) {
+-				printError( '' );
+-				printError( chalk.red( error.message ) );
++			if (error.code === ERROR_TIMEOUT) {
++				printError('');
++				printError(chalk.red(error.message));
+ 				printError(
+ 					chalk.blue(
+ 						`\n☝️ You can set "server.launchTimeout" in jest-puppeteer.config.js`
+ 					)
+ 				);
+-				process.exit( 1 );
++				process.exit(1);
+ 			}
+-			if ( error.code === ERROR_NO_COMMAND ) {
+-				printError( '' );
+-				printError( chalk.red( error.message ) );
++			if (error.code === ERROR_NO_COMMAND) {
++				printError('');
++				printError(chalk.red(error.message));
+ 				printError(
+ 					chalk.blue(
+ 						`\n☝️ You must set "server.command" in jest-puppeteer.config.js`
+ 					)
+ 				);
+-				process.exit( 1 );
++				process.exit(1);
+ 			}
+ 			throw error;
+ 		}
+ 	}
+ }
+ 
+-async function teardown( jestConfig = {} ) {
++async function teardown(jestConfig = {}) {
+ 	const config = await readConfig();
+ 
+-	if ( config.connect ) {
++	if (config.connect) {
+ 		await browser.disconnect();
+ 	} else {
+ 		await browser.close();
+ 	}
+ 
+-	if ( ! jestConfig.watch && ! jestConfig.watchAll ) {
++	if (!jestConfig.watch && !jestConfig.watchAll) {
+ 		await teardownServer();
+ 	}
+ }
+diff --git a/node_modules/@wordpress/scripts/scripts/test-e2e.js b/node_modules/@wordpress/scripts/scripts/test-e2e.js
+index bbaa2e9..9d1e68b 100644
+--- a/node_modules/@wordpress/scripts/scripts/test-e2e.js
++++ b/node_modules/@wordpress/scripts/scripts/test-e2e.js
+@@ -5,16 +5,16 @@ process.env.NODE_ENV = 'test';
+ // Makes the script crash on unhandled rejections instead of silently
+ // ignoring them. In the future, promise rejections that are not handled will
+ // terminate the Node.js process with a non-zero exit code.
+-process.on( 'unhandledRejection', ( err ) => {
++process.on('unhandledRejection', (err) => {
+ 	throw err;
+-} );
++});
+ 
+ /**
+  * External dependencies
+  */
+-const path = require( 'path' );
+-const jest = require( 'jest' );
+-const { sync: spawn } = require( 'cross-spawn' );
++const path = require('path');
++const jest = require('jest');
++const { sync: spawn } = require('cross-spawn');
+ 
+ /**
+  * Internal dependencies
+@@ -26,42 +26,42 @@ const {
+ 	getArgsFromCLI,
+ 	hasArgInCLI,
+ 	hasProjectFile,
+-} = require( '../utils' );
++} = require('../utils');
+ 
+-const result = spawn( 'node', [ require.resolve( 'puppeteer-core/install' ) ], {
+-	stdio: 'inherit',
+-} );
++// const result = spawn( 'node', [ require.resolve( 'puppeteer-core/install' ) ], {
++// 	stdio: 'inherit',
++// } );
+ 
+-if ( result.status > 0 ) {
+-	process.exit( result.status );
+-}
++// if ( result.status > 0 ) {
++// 	process.exit( result.status );
++// }
+ 
+ // Provides a default config path for Puppeteer when jest-puppeteer.config.js
+ // wasn't found at the root of the project or a custom path wasn't defined
+ // using JEST_PUPPETEER_CONFIG environment variable.
+ if (
+-	! hasProjectFile( 'jest-puppeteer.config.js' ) &&
+-	! process.env.JEST_PUPPETEER_CONFIG
++	!hasProjectFile('jest-puppeteer.config.js') &&
++	!process.env.JEST_PUPPETEER_CONFIG
+ ) {
+-	process.env.JEST_PUPPETEER_CONFIG = fromConfigRoot( 'puppeteer.config.js' );
++	process.env.JEST_PUPPETEER_CONFIG = fromConfigRoot('puppeteer.config.js');
+ }
+ 
+-const configFile = getJestOverrideConfigFile( 'e2e' );
++const configFile = getJestOverrideConfigFile('e2e');
+ 
+ const config = configFile
+-	? [ '--config', JSON.stringify( require( configFile ) ) ]
++	? ['--config', JSON.stringify(require(configFile))]
+ 	: [];
+ 
+ // Force e2e tests to run serially, not in parallel. They test against a shared Docker instance
+-const hasRunInBand = hasArgInCLI( '--runInBand' ) || hasArgInCLI( '-i' );
+-const runInBand = ! hasRunInBand ? [ '--runInBand' ] : [];
++const hasRunInBand = hasArgInCLI('--runInBand') || hasArgInCLI('-i');
++const runInBand = !hasRunInBand ? ['--runInBand'] : [];
+ 
+-if ( hasArgInCLI( '--puppeteer-interactive' ) ) {
++if (hasArgInCLI('--puppeteer-interactive')) {
+ 	process.env.PUPPETEER_HEADLESS = 'false';
+-	process.env.PUPPETEER_SLOWMO = getArgFromCLI( '--puppeteer-slowmo' ) || 80;
++	process.env.PUPPETEER_SLOWMO = getArgFromCLI('--puppeteer-slowmo') || 80;
+ }
+ 
+-if ( hasArgInCLI( '--puppeteer-devtools' ) ) {
++if (hasArgInCLI('--puppeteer-devtools')) {
+ 	process.env.PUPPETEER_HEADLESS = 'false';
+ 	process.env.PUPPETEER_DEVTOOLS = 'true';
+ }
+@@ -72,20 +72,20 @@ const configsMapping = {
+ 	WP_PASSWORD: '--wordpress-password',
+ };
+ 
+-Object.entries( configsMapping ).forEach( ( [ envKey, argName ] ) => {
+-	if ( hasArgInCLI( argName ) ) {
+-		process.env[ envKey ] = getArgFromCLI( argName );
++Object.entries(configsMapping).forEach(([envKey, argName]) => {
++	if (hasArgInCLI(argName)) {
++		process.env[envKey] = getArgFromCLI(argName);
+ 	}
+-} );
++});
+ 
+ // Set the default artifacts path.
+-if ( ! process.env.WP_ARTIFACTS_PATH ) {
++if (!process.env.WP_ARTIFACTS_PATH) {
+ 	process.env.WP_ARTIFACTS_PATH = path.resolve(
+ 		process.env.GITHUB_WORKSPACE || process.cwd(),
+ 		'artifacts'
+ 	);
+ }
+ 
+-const cleanUpPrefixes = [ '--puppeteer-', '--wordpress-' ];
++const cleanUpPrefixes = ['--puppeteer-', '--wordpress-'];
+ 
+-jest.run( [ ...config, ...runInBand, ...getArgsFromCLI( cleanUpPrefixes ) ] );
++jest.run([...config, ...runInBand, ...getArgsFromCLI(cleanUpPrefixes)]);

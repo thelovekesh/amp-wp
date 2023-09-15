@@ -104,6 +104,12 @@
     "webpackbar": "5.0.2",
     "wporg-api-client": "1.0.1"
   },
+  "overrides": {
+    "@wordpress/scripts": {
+      "puppeteer-core": "^21.1.1",
+      "expect-puppeteer": "^9.0.0"
+    }
+  },
   "scripts": {
     "build:dev": "cross-env NODE_ENV=development npm-run-all 'build:!(dev|prod)'",
     "build:prod": "cross-env NODE_ENV=production npm-run-all 'build:!(dev|prod)'",
