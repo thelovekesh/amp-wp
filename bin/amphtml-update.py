@@ -402,10 +402,17 @@ def ParseRules(repo_directory, out_dir):
 	# Separate extension scripts from non-extension scripts and gather the versions
 	extension_scripts = collections.defaultdict(list)
 	extension_specs_by_satisfies = dict()
+	bento_excludes = dict()
 	script_tags = []
 	for script_tag in allowed_tags['script']:
 		if 'extension_spec' in script_tag['tag_spec']:
 			extension = script_tag['tag_spec']['extension_spec']['name']
+			# Continue if bento_supported_version is set as we have removed support for bento.
+			if 'bento_supported_version' in script_tag['tag_spec']['extension_spec']:
+				# Generally. components have different spec if being used in bento.
+				# In case spec is same, we will need the list of such components.
+				bento_excludes[extension] = script_tag['tag_spec']['extension_spec']
+				continue
 			extension_scripts[extension].append(script_tag)
 			if 'satisfies_condition' in script_tag['tag_spec']:
 				satisfies = script_tag['tag_spec']['satisfies_condition']
@@ -460,6 +467,18 @@ def ParseRules(repo_directory, out_dir):
 						if required_extension != extension_specs_by_satisfies[required_extension]['name']:
 							raise Exception('Expected satisfied to be for the %s extension' % required_extension)
 						required_versions = extension_specs_by_satisfies[required_extension]['version']
+					# If it's not in extension_specs_by_satisfies, but in bento_excludes, then it's a shared AMP and bento component.
+					elif required_extension in bento_excludes:
+						if required_extension != bento_excludes[required_extension]['name']:
+							raise Exception('Expected satisfied to be for the %s extension' % required_extension)
+						# Get versions and remove the bento_supported_version.
+						required_versions = bento_excludes[required_extension]['version']
+						bento_supported_version = bento_excludes[required_extension]['bento_supported_version']
+						# If AMP and bento version are same, then keep required_versions as is.
+						if bento_supported_version != required_versions:
+							for version in bento_supported_version:
+								if version in required_versions:
+									required_versions.remove(version)
 
 				if len( required_versions ) == 0:
 					raise Exception('Unable to obtain any versions for %s' % required_extension)
