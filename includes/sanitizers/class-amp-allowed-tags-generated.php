@@ -3316,7 +3316,7 @@ class AMP_Allowed_Tags_Generated {
 							4,
 						),
 					),
-					'bento' => false,
+					// 'bento' => false,
 					'requires_extension' => array(
 						'amp-facebook-page',
 					),
@@ -3352,7 +3352,7 @@ class AMP_Allowed_Tags_Generated {
 							4,
 						),
 					),
-					'bento' => true,
+					// 'bento' => true,
 					'requires_extension' => array(
 						'amp-facebook',
 					),

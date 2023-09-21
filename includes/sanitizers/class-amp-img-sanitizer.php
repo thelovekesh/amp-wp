@@ -42,6 +42,24 @@ class AMP_Img_Sanitizer extends AMP_Base_Sanitizer {
 	const FALLBACK_HEIGHT = 400;
 
 	/**
+	 * Fetchpriority attribute.
+	 *
+	 * @var string
+	 */
+	const FETCHPRIORITY = 'fetchpriority';
+
+	/**
+	 * Fetchpriority attribute values.
+	 *
+	 * @var string[]
+	 */
+	const FETCHPRIORITY_VALUES = [
+		'high',
+		'low',
+		'auto',
+	];
+
+	/**
 	 * Tag.
 	 *
 	 * @var string HTML <img> tag to identify and replace with AMP version.

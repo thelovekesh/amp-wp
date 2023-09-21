@@ -19,6 +19,10 @@ concurrency:
 
 jobs:
   pre-run:
+    defaults:
+      run:
+        shell: bash
+        working-directory: assets
     name: 'Pre run'
     runs-on: ubuntu-latest
     outputs:
@@ -85,6 +89,10 @@ jobs:
           IGNORE_PATH_REGEX: \.github\/(?!workflows)|\.wordpress-org\/|docs\/
 
   e2e-test-js:
+    defaults:
+      run:
+        shell: bash
+        working-directory: assets
     name: 'E2E test: JS'
     needs: pre-run
     if: needs.pre-run.outputs.changed-file-count > 0
