@@ -18,84 +18,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pre-run:
-    defaults:
-      run:
-        shell: bash
-        working-directory: assets
-    name: 'Pre run'
-    runs-on: ubuntu-latest
-    outputs:
-      changed-file-count: ${{ steps.determine-file-counts.outputs.count }}
-      changed-php-count: ${{ steps.determine-file-counts.outputs.php-count }}
-      changed-css-count: ${{ steps.determine-file-counts.outputs.css-count }}
-      changed-js-count: ${{ steps.determine-file-counts.outputs.js-count }}
-      changed-gha-workflow-count: ${{ steps.determine-file-counts.outputs.gha-workflow-count }}
-    steps:
-      - name: Checkout including last 2 commits
-        # Fetch last 2 commits if it's not a PR, so that we can determine the list of modified files.
-        if: ${{ github.base_ref == null }}
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-
-      - name: Checkout
-        # Do usual checkout if it's a PR.
-        if: ${{ github.base_ref != null }}
-        uses: actions/checkout@v3
-
-      - name: Fetch base branch
-        # Only fetch base ref if it's a PR.
-        if: ${{ github.base_ref != null }}
-        run: git fetch --depth=1 --no-tags origin ${{ github.base_ref }}
-
-      - name: Determine modified files for PR
-        if: ${{ github.base_ref != null }}
-        run: echo "MODIFIED_FILES=$(git diff --name-only FETCH_HEAD HEAD | base64 -w 0)" >> $GITHUB_ENV
-
-      - name: Determine modified files for commit
-        if: ${{ github.base_ref == null }}
-        run: echo "MODIFIED_FILES=$(git diff --name-only HEAD~1 HEAD | base64 -w 0)" >> $GITHUB_ENV
-
-      - id: determine-file-counts
-        name: Determine if modified files should make the workflow run continue
-        run: |
-          MODIFIED_FILES=$(echo "$MODIFIED_FILES" | base64 -d)
-          echo -e "Modified files:\n$MODIFIED_FILES\n"
-
-          FILE_COUNT=$(php -f bin/determine-modified-files-count.php "$IGNORE_PATH_REGEX" "$MODIFIED_FILES" --invert)
-          PHP_FILE_COUNT=$(php -f bin/determine-modified-files-count.php ".+\.php|composer\.(json|lock)|phpstan\.neon\.dist" "$MODIFIED_FILES")
-          CSS_FILE_COUNT=$(php -f bin/determine-modified-files-count.php ".+\.s?css|package\.json|package-lock\.json" "$MODIFIED_FILES")
-          JS_FILE_COUNT=$(php -f bin/determine-modified-files-count.php ".+\.(js|snap)|package\.json|package-lock\.json" "$MODIFIED_FILES")
-          GHA_WORKFLOW_COUNT=$(php -f bin/determine-modified-files-count.php "(\.github\/workflows\/.+\.yml)" "$MODIFIED_FILES")
-
-          echo "Changed file count: $FILE_COUNT"
-          echo "Changed PHP file count: $PHP_FILE_COUNT"
-          echo "Changed CSS file count: $CSS_FILE_COUNT"
-          echo "Changed JS file count: $JS_FILE_COUNT"
-          echo "Changed GHA workflow file count: $GHA_WORKFLOW_COUNT"
-
-          echo "count=$FILE_COUNT" >> $GITHUB_OUTPUT
-          echo "php-count=$PHP_FILE_COUNT" >> $GITHUB_OUTPUT
-          echo "css-count=$CSS_FILE_COUNT" >> $GITHUB_OUTPUT
-          echo "js-count=$JS_FILE_COUNT" >> $GITHUB_OUTPUT
-          echo "gha-workflow-count=$GHA_WORKFLOW_COUNT" >> $GITHUB_OUTPUT
-        env:
-          # Ignore Paths:
-          # - .github/
-          # - !.github/workflows
-          # - .wordpress-org/
-          # - docs/
-          IGNORE_PATH_REGEX: \.github\/(?!workflows)|\.wordpress-org\/|docs\/
-
   e2e-test-js:
     defaults:
       run:
         shell: bash
         working-directory: assets
     name: 'E2E test: JS'
-    needs: pre-run
-    if: needs.pre-run.outputs.changed-file-count > 0
     runs-on: ubuntu-latest
 
     steps:
