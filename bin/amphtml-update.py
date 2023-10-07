@@ -469,6 +469,7 @@ def ParseRules(repo_directory, out_dir):
 						required_versions = extension_specs_by_satisfies[required_extension]['version']
 					# If it's not in extension_specs_by_satisfies, but in bento_excludes, then it's a shared AMP and bento component.
 					elif required_extension in bento_excludes:
+						print(required_extension)
 						if required_extension != bento_excludes[required_extension]['name']:
 							raise Exception('Expected satisfied to be for the %s extension' % required_extension)
 						# Get versions and remove the bento_supported_version.
@@ -480,12 +481,20 @@ def ParseRules(repo_directory, out_dir):
 								if version in required_versions:
 									required_versions.remove(version)
 
+							# remove this extension from beno_excludes as we have already added it to the script_tags list.
+							bento_excludes.pop(required_extension, None)
+
+							# # Also add this script_tag to the script_tags list and also remove bento_supported_version from the tag_spec.
+							# bento_excluded_tag = bento_excludes[required_extension].copy()
+							# bento_excluded_tag.pop('bento_supported_version', None)
+							# script_tags.append({'tag_spec': {'extension_spec': bento_excluded_tag}})
+
 				if len( required_versions ) == 0:
 					raise Exception('Unable to obtain any versions for %s' % required_extension)
 
 				requires_extension_versions[required_extension] = filter( lambda ver: ver != 'latest', required_versions )
 			tag['tag_spec']['requires_extension'] = requires_extension_versions
-
+	exit()
 	extensions = json.load( open( os.path.join( repo_directory, 'build-system/compile/bundles.config.extensions.json' ) ) )
 
 	latest_versions = json.load( open( latest_extensions_file_path ) )
